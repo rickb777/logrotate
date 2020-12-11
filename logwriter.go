@@ -7,23 +7,40 @@ import (
 	"log"
 )
 
-// NewLogWriter opens a log file for writing and attaches a signal handler
-// (signals.RunOnPoke) to it. Therefore, when the program receives SIGHUP
+// MustLogWriterWithSignals opens a log file for writing and attaches a signal
+// handler (signals.RunOnPoke) to it. Therefore, when the program receives SIGHUP
 // or SIGUSR1, it will close then reopen the log file, allowing log rotation
 // to happen.
 //
 // Note that the logName may be blank or "-", in which case the defaultWriter
 // will be used instead of a log file; there is no signal handler in this case.
-func NewLogWriter(logName string, defaultWriter io.Writer) io.Writer {
+//
+// If an error arises, this will cause a panic.
+func MustLogWriterWithSignals(logName string, defaultWriter io.Writer) io.Writer {
+	w, err := NewLogWriterWithSignals(logName, defaultWriter)
+	if err != nil {
+		panic(fmt.Errorf("Failed to open %s: %v", logName, err))
+	}
+	return w
+}
+
+// NewLogWriterWithSignals opens a log file for writing and attaches a signal
+// handler (signals.RunOnPoke) to it. Therefore, when the program receives SIGHUP
+// or SIGUSR1, it will close then reopen the log file, allowing log rotation
+// to happen.
+//
+// Note that the logName may be blank or "-", in which case the defaultWriter
+// will be used instead of a log file; there is no signal handler in this case.
+func NewLogWriterWithSignals(logName string, defaultWriter io.Writer) (io.Writer, error) {
 	if logName == "" || logName == "-" {
-		return defaultWriter
+		return defaultWriter, nil
 	}
 
 	row := NewReopenWriter(logName)
 
 	err := row.Open()
 	if err != nil {
-		panic(fmt.Errorf("Failed to open %s: %v", logName, err))
+		return nil, err
 	}
 
 	signals.RunOnPoke(
@@ -41,5 +58,5 @@ func NewLogWriter(logName string, defaultWriter io.Writer) io.Writer {
 			}
 		})
 
-	return row
+	return row, nil
 }
