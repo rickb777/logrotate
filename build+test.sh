@@ -5,8 +5,8 @@ unset GOPATH
 export GO111MODULE=on
 
 if ! type -p goveralls; then
-  echo go install github.com/mattn/goveralls
-  go getinstallgithub.com/mattn/goveralls
+  echo go get github.com/mattn/goveralls
+  go get github.com/mattn/goveralls
 fi
 
 echo logrotate...
