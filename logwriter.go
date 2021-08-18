@@ -19,7 +19,7 @@ import (
 func MustLogWriterWithSignals(logName string, defaultWriter io.Writer) io.Writer {
 	w, err := NewLogWriterWithSignals(logName, defaultWriter)
 	if err != nil {
-		panic(fmt.Errorf("Failed to open %s: %v", logName, err))
+		panic(fmt.Errorf("failed to open %s: %v", logName, err))
 	}
 	return w
 }
@@ -45,16 +45,16 @@ func NewLogWriterWithSignals(logName string, defaultWriter io.Writer) (io.Writer
 
 	signals.RunOnPoke(
 		func(message, signalName string) {
-			log.Printf("%s %s", message, signalName)
+			log.Printf("%s %s\n", message, signalName)
 		},
 		func() {
 			err := row.Close()
 			if err != nil {
-				log.Printf("Failed to close %s: %v", row.FileName(), err)
+				log.Printf("Failed to close %s: %v\n", row.FileName(), err)
 			}
 			err = row.Open()
 			if err != nil {
-				log.Printf("Failed to open %s: %v", row.FileName(), err)
+				log.Printf("Failed to open %s: %v\n", row.FileName(), err)
 			}
 		})
 

@@ -10,6 +10,10 @@ import (
 // ReopenWriter is a WriteCloser that is able to close and reopen cleanly
 // whilst in use. It is intended for writing log files, so always appends
 // to existing files instead of truncating them.
+//
+// This will work well with the 'logrotate' utility on Linux. On rotation,
+// 'logrotate' should rename the old file and then signal to the application,
+// e.g. via SIGHUP or SIGUSR1.
 type ReopenWriter interface {
 	io.Writer
 	io.Closer
@@ -51,9 +55,9 @@ func (r *reopener) Write(p []byte) (n int, err error) {
 // Open opens the file.
 func (r *reopener) Open() error {
 	flag := os.O_WRONLY | os.O_CREATE | os.O_APPEND
-	w, err := os.OpenFile(r.fileName, flag, os.FileMode(0644))
+	w, err := os.OpenFile(r.fileName, flag, 0644)
 	if err != nil {
-		return fmt.Errorf("Failed to open %s: %w", r.fileName, err)
+		return fmt.Errorf("failed to open %s: %w", r.fileName, err)
 	}
 	r.writer.Put(w)
 	return nil
@@ -66,7 +70,7 @@ func (r *reopener) Close() error {
 	r.writer.Put(nil)
 	err := w.Close()
 	if err != nil {
-		return fmt.Errorf("Failed to close %s: %w", r.fileName, err)
+		return fmt.Errorf("failed to close %s: %w", r.fileName, err)
 	}
 	return nil
 }
