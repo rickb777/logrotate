@@ -18,3 +18,6 @@ echo safe...
 go test -v -covermode=count -coverprofile=safe.out ./safe
 go tool cover -func=safe.out
 [ -z "$COVERALLS_TOKEN" ] || goveralls -coverprofile=safe.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+
+# check that non Linux builds can succeed
+GOOS=windows go build ./...

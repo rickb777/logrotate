@@ -2,6 +2,8 @@
 
 package signals
 
+import "log"
+
 // Logger provides a function to report that a signal has been received.
 type Logger func(message, signalName string)
 
