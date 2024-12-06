@@ -6,4 +6,4 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rickb777/logrotate)](https://goreportcard.com/report/github.com/rickb777/logrotate)
 [![Issues](https://img.shields.io/github/issues/rickb777/logrotate.svg)](https://github.com/rickb777/logrotate/issues)
 
-Utilities to support logfile rotation in Go (compatible with Linux 'logrotate').
+Utilities to support logfile rotation in Go - compatible with Linux 'logrotate'.

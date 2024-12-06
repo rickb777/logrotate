@@ -15,7 +15,10 @@ import (
 // Note that the logName may be blank or "-", in which case the defaultWriter
 // will be used instead of a log file; there is no signal handler in this case.
 //
-// If an error arises, this will cause a panic.
+// The returned writer is a ReopenWriter unless the logName is blank or "-".
+//
+// See NewLogWriterWithSignals. If an error arises because the file cannot be
+// opened, this will cause a panic.
 func MustLogWriterWithSignals(logName string, defaultWriter io.Writer) io.Writer {
 	w, err := NewLogWriterWithSignals(logName, defaultWriter)
 	if err != nil {
@@ -31,6 +34,8 @@ func MustLogWriterWithSignals(logName string, defaultWriter io.Writer) io.Writer
 //
 // Note that the logName may be blank or "-", in which case the defaultWriter
 // will be used instead of a log file; there is no signal handler in this case.
+//
+// The returned writer is a ReopenWriter unless the logName is blank or "-".
 func NewLogWriterWithSignals(logName string, defaultWriter io.Writer) (io.Writer, error) {
 	if logName == "" || logName == "-" {
 		return defaultWriter, nil
@@ -45,18 +50,25 @@ func NewLogWriterWithSignals(logName string, defaultWriter io.Writer) (io.Writer
 
 	signals.RunOnPoke(
 		func(message, signalName string) {
-			log.Printf("%s %s\n", message, signalName)
+			Printf("%s by %s\n", message, signalName)
 		},
 		func() {
 			err := row.Close()
 			if err != nil {
-				log.Printf("Failed to close %s: %v\n", row.FileName(), err)
+				Printf("Failed to close %s: %v\n", row.FileName(), err)
 			}
 			err = row.Open()
 			if err != nil {
-				log.Printf("Failed to open %s: %v\n", row.FileName(), err)
+				Printf("Failed to open %s: %v\n", row.FileName(), err)
 			}
 		})
 
 	return row, nil
+}
+
+// Printf emits messages via log.Printf and is used by NewLogWriterWithSignals
+// and MustLogWriterWithSignals, reporting whenever any signal has been received.
+// Alter this before calling those functions if different behaviour is required.
+var Printf = func(format string, v ...any) {
+	log.Printf(format, v...)
 }

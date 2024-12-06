@@ -13,13 +13,12 @@ import (
 //
 // This will work well with the 'logrotate' utility on Linux. On rotation,
 // 'logrotate' should rename the old file and then signal to the application,
-// e.g. via SIGHUP or SIGUSR1.
+// usually via SIGHUP or SIGUSR1.
 type ReopenWriter interface {
-	io.Writer
-	io.Closer
+	io.WriteCloser
+	io.StringWriter
 	FileName() string
 	Open() error
-	WriteString(s string) (n int, err error)
 }
 
 type reopener struct {
@@ -27,9 +26,12 @@ type reopener struct {
 	writer   *safe.Safe
 }
 
-// NewReopenWriter returns a new reopener with a given filename.
+// NewReopenWriter returns a new ReopenWriter with a given filename.
 // The filename stays constant even when the file is closed
 // and reopened.
+//
+// This function does not register any signal handling. For
+// writing logfiles with Unix logrotate, see NewLogWriterWithSignals.
 func NewReopenWriter(fileName string) ReopenWriter {
 	return &reopener{fileName, safe.New(nil)}
 }
@@ -67,6 +69,9 @@ func (r *reopener) Open() error {
 // file is reopened.
 func (r *reopener) Close() error {
 	w := r.writer.Get().(io.Closer)
+	if w == nil {
+		return fmt.Errorf("attempt to close %s when it is not open", r.fileName)
+	}
 	r.writer.Put(nil)
 	err := w.Close()
 	if err != nil {
