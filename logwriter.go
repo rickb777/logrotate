@@ -50,7 +50,7 @@ func NewLogWriterWithSignals(logName string, defaultWriter io.Writer) (io.Writer
 
 	signals.RunOnPoke(
 		func(message, signalName string) {
-			Printf("%s by %s\n", message, signalName)
+			Printf("%s by %s signal\n", message, signalName)
 		},
 		func() {
 			err := row.Close()
