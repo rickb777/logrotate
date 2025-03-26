@@ -1,23 +1,21 @@
 package safe
 
 import (
-	. "github.com/onsi/gomega"
+	"github.com/rickb777/expect"
 	"testing"
 	"time"
 )
 
 func TestSafe(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	safe := New("foo")
 
-	g.Expect(safe.Get()).Should(Equal("foo"))
-	g.Expect(safe.Get()).Should(Not(Equal("bar")))
+	expect.Any(safe.Get()).ToBe(t, "foo")
+	expect.Any(safe.Get()).Not().ToBe(t, "bar")
 
 	safe.Put("bar")
 
-	g.Expect(safe.Get()).Should(Equal("bar"))
-	//g.Expect(safe.GetWhenDefined()).Should(Equal("bar"))
+	expect.Any(safe.Get()).ToBe(t, "bar")
+	//expect.String(safe.GetWhenDefined()).ToBe(t,"bar"))
 
 	safe.Put(nil)
 
@@ -26,5 +24,5 @@ func TestSafe(t *testing.T) {
 		safe.Put("yay")
 	}()
 
-	g.Expect(safe.GetWhenDefined()).Should(Equal("yay"))
+	expect.Any(safe.GetWhenDefined()).ToBe(t, "yay")
 }

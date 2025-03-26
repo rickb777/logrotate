@@ -2,7 +2,7 @@ package logrotate
 
 import (
 	"fmt"
-	. "github.com/onsi/gomega"
+	"github.com/rickb777/expect"
 	"io"
 	"log"
 	"os"
@@ -14,20 +14,18 @@ const line1 = "So shaken as we are,\n"
 const line2 = "So wan with care.\n"
 
 func TestReopenWriter(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	ch := make(chan bool)
 	defer os.Remove("test.txt")
 	rw := NewReopenWriter("test.txt")
 
-	g.Expect(rw.FileName()).Should(Equal("test.txt"))
+	expect.String(rw.FileName()).ToBe(t, "test.txt")
 
 	err := rw.Open()
-	g.Expect(err).Should(BeNil())
+	expect.Error(err).ToBeNil(t)
 
 	n, err := rw.WriteString(line1)
-	g.Expect(err).Should(BeNil())
-	g.Expect(n).Should(Equal(len(line1)))
+	expect.Error(err).ToBeNil(t)
+	expect.Number(n).ToBe(t, len(line1))
 
 	go func() {
 		<-ch
@@ -40,21 +38,21 @@ func TestReopenWriter(t *testing.T) {
 	ch <- true
 
 	n, err = rw.WriteString(line2)
-	g.Expect(err).Should(BeNil())
+	expect.Error(err).ToBeNil(t)
 
 	ch <- true
 
 	rw.Close()
 
 	file, err := os.Open("test.txt")
-	g.Expect(err).Should(BeNil())
+	expect.Error(err).ToBeNil(t)
 
 	content, err := io.ReadAll(file)
-	g.Expect(err).Should(BeNil())
+	expect.Error(err).ToBeNil(t)
 
-	g.Expect(file.Close()).Should(BeNil())
+	expect.Error(file.Close()).ToBeNil(t)
 
-	g.Expect(string(content)).Should(Equal(line1 + line2))
+	expect.String(content).ToEqual(t, line1+line2)
 }
 
 func ExampleMustLogWriterWithSignals() {
